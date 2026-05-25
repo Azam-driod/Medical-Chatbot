@@ -1,12 +1,11 @@
-# Creating Directory
-mkdir  -p src
-mkdir  -p research
+pt# Creating directory
+mkdir -p src
+mkdir -p research
 
-
-# creating files
+# Creating files
 touch src/_init_.py
 touch src/helper.py
-touch src/prom.py
+touch src/prompt.py
 touch .env
 touch setup.py
 touch app.py
