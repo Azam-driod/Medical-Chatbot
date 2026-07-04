@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>24/7 Medical Chatbot</title>
+
+<style>
+    *{
+        margin:0;
+        padding:0;
+        box-sizing:border-box;
+        font-family: Arial, sans-serif;
+    }
+
+    body{
+        background:#f4f8fb;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        height:100vh;
+    }
+
+    .chat-container{
+        width:400px;
+        height:650px;
+        background:white;
+        border-radius:15px;
+        box-shadow:0 5px 20px rgba(0,0,0,0.2);
+        overflow:hidden;
+        display:flex;
+        flex-direction:column;
+    }
+
+    .chat-header{
+        background:#0d6efd;
+        color:white;
+        padding:20px;
+        text-align:center;
+    }
+
+    .chat-header h2{
+        margin-bottom:5px;
+    }
+
+    .chat-box{
+        flex:1;
+        padding:15px;
+        overflow-y:auto;
+        background:#eef5ff;
+    }
+
+    .message{
+        max-width:80%;
+        padding:10px 15px;
+        margin:10px 0;
+        border-radius:15px;
+        word-wrap:break-word;
+    }
+
+    .bot{
+        background:#ffffff;
+        border:1px solid #ddd;
+    }
+
+    .user{
+        background:#0d6efd;
+        color:white;
+        margin-left:auto;
+    }
+
+    .chat-input{
+        display:flex;
+        padding:10px;
+        border-top:1px solid #ddd;
+        background:white;
+    }
+
+    .chat-input input{
+        flex:1;
+        padding:12px;
+        border:1px solid #ccc;
+        border-radius:8px;
+        outline:none;
+    }
+
+    .chat-input button{
+        margin-left:10px;
+        padding:12px 18px;
+        background:#0d6efd;
+        color:white;
+        border:none;
+        border-radius:8px;
+        cursor:pointer;
+    }
+
+    .chat-input button:hover{
+        background:#0b5ed7;
+    }
+
+    .disclaimer{
+        font-size:11px;
+        color:#666;
+        padding:8px;
+        text-align:center;
+        background:#fafafa;
+    }
+</style>
+</head>
+<body>
+
+<div class="chat-container">
+
+    <div class="chat-header">
+        <h2>🏥 Medical Assistant</h2>
+        <p>Available 24/7</p>
+    </div>
+
+    <div class="chat-box" id="chatBox">
+        <div class="message bot">
+            Hello! I'm your Medical Assistant. How can I help you today?
+        </div>
+    </div>
+
+    <div class="disclaimer">
+        This chatbot provides general health information and is not a substitute for professional medical advice.
+    </div>
+
+    <div class="chat-input">
+        <input type="text" id="userInput" placeholder="Ask a health question...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+</div>
+
+<script>
+
+function addMessage(text, sender){
+    const chatBox = document.getElementById("chatBox");
+
+    const msg = document.createElement("div");
+    msg.classList.add("message", sender);
+    msg.innerText = text;
+
+    chatBox.appendChild(msg);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function getBotResponse(input){
+
+    input = input.toLowerCase();
+
+    if(input.includes("fever")){
+        return "A fever can be caused by infections or other conditions. Stay hydrated and monitor your temperature. Seek medical care if symptoms worsen.";
+    }
+
+    if(input.includes("headache")){
+        return "Headaches can result from stress, dehydration, lack of sleep, or illness. Rest, hydrate, and consult a healthcare professional if severe.";
+    }
+
+    if(input.includes("cold") || input.includes("cough")){
+        return "Common cold symptoms usually improve with rest, fluids, and proper nutrition. If symptoms persist or worsen, consult a doctor.";
+    }
+
+    if(input.includes("diabetes")){
+        return "Diabetes is a condition affecting blood sugar regulation. Managing diet, exercise, and prescribed medications is important.";
+    }
+
+    if(input.includes("blood pressure")){
+        return "Maintaining a healthy diet, regular exercise, and routine monitoring can help manage blood pressure.";
+    }
+
+    if(input.includes("emergency")){
+        return "If you believe you are experiencing a medical emergency, contact local emergency services or seek immediate medical care.";
+    }
+
+    return "I can provide general health information. For personalized diagnosis or treatment, please consult a licensed healthcare professional.";
+}
+
+function sendMessage(){
+
+    const inputField = document.getElementById("userInput");
+    const userText = inputField.value.trim();
+
+    if(userText === "") return;
+
+    addMessage(userText, "user");
+
+    inputField.value = "";
+
+    setTimeout(() => {
+        const response = getBotResponse(userText);
+        addMessage(response, "bot");
+    }, 500);
+}
+
+document.getElementById("userInput").addEventListener("keypress", function(event){
+    if(event.key === "Enter"){
+        sendMessage();
+    }
+});
+
+</script>
+
+</body>
+</html>
