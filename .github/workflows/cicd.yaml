@@ -1,0 +1,81 @@
+name: Deploy Application Docker Image to EC2 instance
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: medical-chatbot
+  IMAGE_TAG: latest
+
+jobs:
+  build-and-push:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+
+    outputs:
+      image: ${{ steps.image.outputs.image }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker Image
+        run: |
+          docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
+
+      - name: Tag Docker Image
+        run: |
+          docker tag $ECR_REPOSITORY:$IMAGE_TAG \
+          ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG
+
+      - name: Push Docker Image
+        run: |
+          docker push \
+          ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG
+
+      - name: Save Image URI
+        id: image
+        run: |
+          echo "image=${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+  deploy:
+    name: Deploy to EC2
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy Application
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            aws ecr get-login-password --region us-east-1 | \
+            docker login --username AWS --password-stdin \
+            ${{ needs.build-and-push.outputs.image }}
+
+            docker stop medical-chatbot || true
+            docker rm medical-chatbot || true
+
+            docker pull ${{ needs.build-and-push.outputs.image }}
+
+            docker run -d \
+              --name medical-chatbot \
+              -p 80:5000 \
+              --restart unless-stopped \
+              ${{ needs.build-and-push.outputs.image }}
