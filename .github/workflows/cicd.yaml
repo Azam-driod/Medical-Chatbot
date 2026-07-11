@@ -7,7 +7,7 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  ECR_REPOSITORY: medicalbot
+  ECR_REPOSITORY: Medical-Chatbot
   IMAGE_TAG: latest
 
 jobs:
